@@ -89,7 +89,8 @@ function update() {
     }
 
     const accuracyText = locationAccuracy === null ? '' : ` · location accuracy ±${Math.round(locationAccuracy)} m`;
-    locationStatus.textContent = `Showing ${nearbyStations.length} nearby stations · ${currentPosition.latitude.toFixed(4)}, ${currentPosition.longitude.toFixed(4)}${accuracyText}`;
+    const rangeKm = (visibleRadius / 1000).toFixed(1);
+    locationStatus.textContent = `Showing ${nearbyStations.length} nearby stations within ${rangeKm} km · ${currentPosition.latitude.toFixed(4)}, ${currentPosition.longitude.toFixed(4)}${accuracyText}`;
 }
 
 let oldHeading;

@@ -84,6 +84,11 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
+#headingAccuracy {
+    color: #aaa;
+    font-size: 0.75em;
+}
+
 #locationStatus {
     min-height: 1.2em;
     line-height: 1.4;

@@ -23,6 +23,16 @@ function distanceMeters(a, b) {
     return 2 * EARTH_RADIUS_METERS * Math.asin(Math.sqrt(h));
 }
 
+function bearingDegrees(from, to) {
+    const toRadians = (degrees) => (degrees * Math.PI) / 180;
+    const lat1 = toRadians(from.latitude);
+    const lat2 = toRadians(to.latitude);
+    const lonDiff = toRadians(to.longitude - from.longitude);
+    const y = Math.sin(lonDiff) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lonDiff);
+    return (Math.atan2(y, x) * 180) / Math.PI;
+}
+
 function update() {
     if (!currentPosition || stationInfo.length === 0) return;
 
@@ -69,24 +79,24 @@ function update() {
             stationNamesWrap.appendChild(stationElement);
         }
 
-        // Convert the small local coordinate offsets to meters. Longitude
-        // shrinks toward the poles, so adjust east-west distance by latitude.
-        const northMeters = (station.latitude - currentPosition.latitude) * 111320;
-        const eastMeters =
-            (station.longitude - currentPosition.longitude) *
-            111320 *
-            Math.cos((currentPosition.latitude * Math.PI) / 180);
+        // Use the great-circle distance and initial bearing so station positions
+        // remain accurate as the visible radius grows beyond the immediate area.
+        const bearing = (bearingDegrees(currentPosition, station) * Math.PI) / 180;
+        const eastMeters = station.distance * Math.sin(bearing);
+        const northMeters = station.distance * Math.cos(bearing);
         stationElement.style.opacity = `${Math.max(0.25, 1 - station.distance / (visibleRadius * 1.15))}`;
         stationElement.style.transform = `translate(${eastMeters * scale}px, ${-northMeters * scale}px) translate(-50%, -50%) scale(${Math.max(0.65, 1 - station.distance / (visibleRadius * 2))}) rotate(calc(-1 * var(--rotation)))`;
     }
 
-    locationStatus.textContent = `Showing ${nearbyStations.length} nearby stations · ${currentPosition.latitude.toFixed(4)}, ${currentPosition.longitude.toFixed(4)}`;
+    const accuracyText = locationAccuracy === null ? '' : ` · location accuracy ±${Math.round(locationAccuracy)} m`;
+    locationStatus.textContent = `Showing ${nearbyStations.length} nearby stations · ${currentPosition.latitude.toFixed(4)}, ${currentPosition.longitude.toFixed(4)}${accuracyText}`;
 }
 
 let oldHeading;
 let rotation = 0;
+let locationAccuracy = null;
 
-function setHeading(degrees) {
+function setHeading(degrees, accuracy) {
     // Keep the red marker at the top as north: rotate the map opposite to the
     // direction the device is facing, while keeping the numeric readout normal.
     const heading = ((degrees % 360) + 360) % 360;
@@ -94,11 +104,16 @@ function setHeading(degrees) {
     if (oldHeading !== undefined) {
         const delta = ((heading - oldHeading + 540) % 360) - 180;
         rotation -= delta;
+    } else {
+        // Align the map on the first sensor event as well as on later changes.
+        rotation = -heading;
     }
 
     oldHeading = heading;
     document.body.style.setProperty('--rotation', `${rotation}deg`);
     headingValue.textContent = `${Math.round(heading)}°`;
+    const headingAccuracy = document.querySelector('#headingAccuracy');
+    headingAccuracy.textContent = Number.isFinite(accuracy) && accuracy >= 0 ? ` ±${Math.round(accuracy)}°` : '';
 }
 
 function startLocation() {
@@ -113,6 +128,7 @@ function startLocation() {
     watchId = navigator.geolocation.watchPosition(
         ({ coords }) => {
             currentPosition = { latitude: coords.latitude, longitude: coords.longitude };
+            locationAccuracy = Number.isFinite(coords.accuracy) ? coords.accuracy : null;
             locationButton.textContent = 'Location active';
             update();
         },
@@ -132,9 +148,16 @@ function onDeviceOrientation(event) {
     // as an absolute angle, which is measured in the opposite direction.
     const deviceHeading = event.webkitCompassHeading;
     if (Number.isFinite(deviceHeading)) {
-        setHeading(deviceHeading);
+        setHeading(deviceHeading, event.webkitCompassAccuracy);
     } else if (event.absolute && Number.isFinite(event.alpha)) {
-        setHeading(360 - event.alpha);
+        // alpha is relative to the device's screen axes; compensate when the
+        // user rotates the display into landscape or upside-down orientation.
+        const screenAngle = Number.isFinite(screen.orientation?.angle)
+            ? screen.orientation.angle
+            : Number.isFinite(window.orientation)
+              ? window.orientation
+              : 0;
+        setHeading(360 - event.alpha + screenAngle);
     }
 }
 
@@ -172,7 +195,6 @@ async function initialize() {
     }
 
     startLocation();
-    startCompass();
     locationButton.addEventListener('click', startLocation);
     compassButton.addEventListener('click', startCompass);
 

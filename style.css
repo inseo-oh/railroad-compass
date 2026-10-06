@@ -1,0 +1,132 @@
+@charset "utf-8";
+@import './reset.css';
+
+body {
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 7vh 1rem 3vh;
+    background: #111;
+    color: #aaa;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-size: clamp(0.9rem, 2.5vh, 1.25rem);
+    --rotation: 0deg;
+    font-family: sans-serif;
+}
+
+.compassBg {
+    border-radius: 50%;
+    outline: 1vh solid;
+    width: min(80vw, 62vh);
+    height: min(80vw, 62vh);
+    position: relative;
+    color: #444;
+}
+.compassBg .alignLine {
+    position: absolute;
+    left: 50%;
+    top: 0px;
+    width: 4px;
+    height: 7%;
+    background: #f77;
+    top: -9%;
+}
+.compassBg .degText,
+.compassBg .stationNamesWrap {
+    transform: rotate(var(--rotation));
+    transform-origin: center;
+    transition: transform 180ms ease-out;
+}
+.compassBg .degText {
+    width: 100%;
+    height: 100%;
+}
+.compassBg .text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-family: serif;
+}
+.stationNamesWrap {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0px;
+    height: 0px;
+}
+.stationNamesWrap [station] {
+    position: absolute;
+    width: max-content;
+    color: #fff;
+    z-index: 1;
+    font-size: clamp(0.72rem, 4.2vh, 2.1rem);
+    white-space: nowrap;
+    text-shadow: 0 1px 5px #111;
+    transform-origin: center;
+}
+
+.controls {
+    width: min(100%, 34rem);
+    display: grid;
+    justify-items: center;
+    gap: 0.9rem;
+    text-align: center;
+}
+
+.headingReadout {
+    color: #fff;
+    font-size: 1.2rem;
+    font-variant-numeric: tabular-nums;
+}
+
+#locationStatus {
+    min-height: 1.2em;
+    line-height: 1.4;
+    font-size: 0.9rem;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+button {
+    border: 1px solid #666;
+    border-radius: 999px;
+    padding: 0.7rem 1rem;
+    background: #222;
+    color: #fff;
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+    background: #333;
+}
+
+button:focus-visible {
+    outline: 2px solid #f77;
+    outline-offset: 3px;
+}
+
+button:disabled {
+    color: #999;
+    cursor: default;
+}
+
+@media (max-height: 520px) {
+    body {
+        padding-top: 10vh;
+        padding-bottom: 4vh;
+    }
+    .controls {
+        gap: 0.45rem;
+    }
+}

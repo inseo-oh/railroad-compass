@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Railroad Compass</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <div class="compassBg">
+            <div class="alignLine"></div>
+            <div class="degText"></div>
+            <div class="stationNamesWrap"></div>
+        </div>
+        <main class="controls" aria-live="polite">
+            <div class="headingReadout">Heading: <span id="headingValue">--</span></div>
+            <p id="locationStatus">Choose your location to find nearby stations.</p>
+            <div class="buttons">
+                <button id="locationButton" type="button">Use my location</button>
+                <button id="compassButton" type="button">Enable compass</button>
+            </div>
+        </main>
+        <script src="script.js"></script>
+    </body>
+</html>

@@ -1,5 +1,5 @@
 const EARTH_RADIUS_METERS = 6371000;
-const STATION_COUNT = 10;
+const STATION_COUNT = 5;
 
 let stationInfo = [];
 let currentPosition = null;

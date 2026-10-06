@@ -77,17 +77,27 @@ function update() {
             111320 *
             Math.cos((currentPosition.latitude * Math.PI) / 180);
         stationElement.style.opacity = `${Math.max(0.25, 1 - station.distance / (visibleRadius * 1.15))}`;
-        stationElement.style.transform = `translate(${eastMeters * scale}px, ${-northMeters * scale}px) translate(-50%, -50%) scale(${Math.max(0.65, 1 - station.distance / (visibleRadius * 2))}) rotate(${heading}deg)`;
+        stationElement.style.transform = `translate(${eastMeters * scale}px, ${-northMeters * scale}px) translate(-50%, -50%) scale(${Math.max(0.65, 1 - station.distance / (visibleRadius * 2))}) rotate(calc(-1 * var(--rotation)))`;
     }
 
     locationStatus.textContent = `Showing ${nearbyStations.length} nearby stations · ${currentPosition.latitude.toFixed(4)}, ${currentPosition.longitude.toFixed(4)}`;
 }
 
+let oldHeading;
+let rotation = 0;
+
 function setHeading(degrees) {
     // Keep the red marker at the top as north: rotate the map opposite to the
     // direction the device is facing, while keeping the numeric readout normal.
-    heading = ((degrees % 360) + 360) % 360;
-    document.body.style.setProperty('--rotation', `${-heading}deg`);
+    const heading = ((degrees % 360) + 360) % 360;
+
+    if (oldHeading !== undefined) {
+        const delta = ((heading - oldHeading + 540) % 360) - 180;
+        rotation -= delta;
+    }
+
+    oldHeading = heading;
+    document.body.style.setProperty('--rotation', `${rotation}deg`);
     headingValue.textContent = `${Math.round(heading)}°`;
 }
 

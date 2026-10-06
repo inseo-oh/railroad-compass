@@ -67,6 +67,7 @@ body {
     white-space: nowrap;
     text-shadow: 0 1px 5px #111;
     transform-origin: center;
+    transition: 1s;
 }
 
 .controls {
